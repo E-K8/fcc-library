@@ -83,10 +83,28 @@ module.exports = function (app) {
       }
     })
 
-    .post(function (req, res) {
-      let bookid = req.params.id;
+    .post(async function (req, res) {
+      let bookID = req.params.id;
       let comment = req.body.comment;
       //json res format same as .get
+
+      if (!comment) {
+        return res.send('missing required field comment');
+      }
+
+      try {
+        let book = await Book.findById(bookID);
+        book.comments.push(comment);
+        book = await book.save();
+        res.json({
+          comments: book.comments,
+          _id: book._id,
+          title: book.title,
+          commentcount: book.comments.length,
+        });
+      } catch (err) {
+        res.send('no book exists');
+      }
     })
 
     .delete(function (req, res) {
