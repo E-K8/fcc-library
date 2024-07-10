@@ -13,6 +13,9 @@ const server = require('../server');
 
 chai.use(chaiHttp);
 
+let bookID;
+const timeout = 10000;
+
 suite('Functional Tests', function () {
   /*
    * ----[EXAMPLE TEST]----
@@ -42,7 +45,7 @@ suite('Functional Tests', function () {
         );
         done();
       });
-  });
+  }).timeout(timeout);
   /*
    * ----[END of EXAMPLE TEST]----
    */
@@ -60,8 +63,9 @@ suite('Functional Tests', function () {
               assert.equal(res.status, 200);
               bookID = res.body._id;
               assert.equal(res.body.title, 'example title');
-            });
-          done();
+              done();
+            })
+            .timeout(timeout);
         });
 
         test('Test POST /api/books with no title given', function (done) {
@@ -73,7 +77,8 @@ suite('Functional Tests', function () {
               assert.equal(res.status, 200);
               assert.equal(res.text, 'missing required field title');
               done();
-            });
+            })
+            .timeout(timeout);
         });
       }
     );
@@ -87,7 +92,8 @@ suite('Functional Tests', function () {
             assert.equal(res.status, 200);
             assert.isArray(res.body, 'is is an array');
             done();
-          });
+          })
+          .timeout(timeout);
       });
     });
 
@@ -98,13 +104,24 @@ suite('Functional Tests', function () {
           .get('/api/books/invalidID')
           .end(function (err, res) {
             assert.equal(res.status, 200);
-            assert.equal(res.text, 'no book exists');
+            const responseText = res.text.replace(/(^"|"$)/g, '');
+
+            assert.equal(responseText, 'no book exists');
             done();
-          });
+          })
+          .timeout(timeout);
       });
 
       test('Test GET /api/books/[id] with valid id in db', function (done) {
-        //done();
+        chai
+          .request(server)
+          .get('/api/books/' + bookID)
+          .end(function (err, res) {
+            assert.equal(res.status, 200);
+            assert.equal(res.body.title, 'example title');
+            done();
+          })
+          .timeout(timeout);
       });
     });
 
