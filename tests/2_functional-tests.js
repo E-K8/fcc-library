@@ -14,6 +14,7 @@ const server = require('../server');
 chai.use(chaiHttp);
 
 let bookID;
+let invalidID;
 const timeout = 10000;
 
 suite('Functional Tests', function () {
@@ -157,7 +158,18 @@ suite('Functional Tests', function () {
         });
 
         test('Test POST /api/books/[id] with comment, id not in db', function (done) {
-          //done();
+          chai
+            .request(server)
+            .post('/api/books/' + invalidID)
+            .send({
+              comment: 'comment',
+            })
+            .end(function (err, res) {
+              assert.equal(res.status, 200);
+              assert.equal(res.text, 'no book exists');
+              done();
+            })
+            .timeout(timeout);
         });
       }
     );
