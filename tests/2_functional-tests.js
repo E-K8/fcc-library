@@ -129,11 +129,31 @@ suite('Functional Tests', function () {
       'POST /api/books/[id] => add comment/expect book object with id',
       function () {
         test('Test POST /api/books/[id] with comment', function (done) {
-          //done();
+          chai
+            .request(server)
+            .post('/api/books/' + bookID)
+            .send({
+              comment: 'comment',
+            })
+            .end(function (err, res) {
+              assert.equal(res.status, 200);
+              assert.equal(res.body.comments[0], 'comment');
+              done();
+            })
+            .timeout(timeout);
         });
 
         test('Test POST /api/books/[id] without comment field', function (done) {
-          //done();
+          chai
+            .request(server)
+            .post('/api/books/' + bookID)
+            .send({})
+            .end(function (err, res) {
+              assert.equal(res.status, 200);
+              assert.equal(res.text, 'missing required field comment');
+              done();
+            })
+            .timeout(timeout);
         });
 
         test('Test POST /api/books/[id] with comment, id not in db', function (done) {
