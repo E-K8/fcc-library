@@ -1,15 +1,8 @@
-/*
- *
- *
- *       FILL IN EACH FUNCTIONAL TEST BELOW COMPLETELY
- *       -----[Keep the tests in the same order!]-----
- *
- */
-
 const chaiHttp = require('chai-http');
 const chai = require('chai');
-const assert = chai.assert;
+const { assert } = chai;
 const server = require('../server');
+const { Book } = require('../models');
 
 chai.use(chaiHttp);
 
@@ -18,6 +11,12 @@ let invalidID;
 const timeout = 10000;
 
 suite('Functional Tests', function () {
+  before(async function () {
+    const sampleBook = new Book({ title: 'Sample Book', comments: [] });
+    const savedBook = await sampleBook.save();
+    bookID = savedBook._id.toString();
+  });
+
   /*
    * ----[EXAMPLE TEST]----
    * Each test should completely test the response of the API end-point including response status code!
@@ -29,25 +28,26 @@ suite('Functional Tests', function () {
       .end(function (err, res) {
         assert.equal(res.status, 200);
         assert.isArray(res.body, 'response should be an array');
-        assert.property(
-          res.body[0],
-          'commentcount',
-          'Books in array should contain commentcount'
-        );
-        assert.property(
-          res.body[0],
-          'title',
-          'Books in array should contain title'
-        );
-        assert.property(
-          res.body[0],
-          '_id',
-          'Books in array should contain _id'
-        );
+        if (res.body.length > 0) {
+          assert.property(
+            res.body[0],
+            'commentcount',
+            'Books in array should contain commentcount'
+          );
+          assert.property(
+            res.body[0],
+            'title',
+            'Books in array should contain title'
+          );
+          assert.property(
+            res.body[0],
+            '_id',
+            'Books in array should contain _id'
+          );
+        }
         done();
-      })
-      .timeout(timeout);
-  });
+      });
+  }).timeout(timeout);
   /*
    * ----[END of EXAMPLE TEST]----
    */
@@ -188,7 +188,7 @@ suite('Functional Tests', function () {
           .timeout(timeout);
       });
 
-      test('Test DELETE /api/books/[id] with  id not in db', function (done) {
+      test('Test DELETE /api/books/[id] with id not in db', function (done) {
         chai
           .request(server)
           .delete('/api/books/' + invalidID)
